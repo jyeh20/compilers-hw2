@@ -1,6 +1,8 @@
 const inputBox = document.querySelector("input");
 const answerDiv = document.querySelector("#result");
 
+const POLY =
+  /^(?!.*\-?\d+(\.\d+)?x?(?:\^\-?\d+)?(\+?\-?\d+(\.\d+)?x?(\^\-?\d+)?)*).*/g;
 const PATTERN =
   /\-?\d+(\.\d+)?x?(?:\^\-?\d+)?(\+?\-?\d+(\.\d+)?x?(\^\-?\d+)?)*/g;
 const COEFFXANDEXP = /\d+(\.\d+)?\x\^\-?\d+/g;
@@ -111,7 +113,6 @@ function* tokenize(inputStream) {
       }
     }
     throw new SyntaxError("Unexpected token");
-    return;
   }
 }
 
@@ -184,7 +185,6 @@ function differentiate(terms) {
   const termMap = terms.map(
     (t) => new Term(t.exponent * t.coefficient, t.exponent - 1)
   );
-  console.log(termMap);
   if (termMap.length === 1 && termMap[0].coefficient === 0) {
     return "0";
   }
@@ -213,11 +213,23 @@ function differentiate(terms) {
 }
 
 function derivative(poly) {
-  return differentiate(parse([...tokenize(poly)]));
+  let tokens = undefined;
+  let AST = undefined;
+  try {
+    tokens = [...tokenize(poly)];
+  } catch (e) {
+    return e;
+  }
+
+  try {
+    AST = [...parse(tokens)];
+  } catch (e) {
+    return e;
+  }
+
+  return differentiate(AST);
 }
 
 inputBox.addEventListener("input", () => {
-  answerDiv.textContent = differentiate([
-    ...parse([...tokenize(inputBox.value)]),
-  ]);
+  answerDiv.textContent = derivative(inputBox.value);
 });
