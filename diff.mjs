@@ -1,3 +1,16 @@
+const POLY =
+  /^(?!.*\-?\d+(\.\d+)?x?(?:\^\-?\d+)?(\+?\-?\d+(\.\d+)?x?(\^\-?\d+)?)*).*/g;
+const PATTERN =
+  /\-?\d+(\.\d+)?x?(?:\^\-?\d+)?(\+?\-?\d+(\.\d+)?x?(\^\-?\d+)?)*/g;
+const COEFFXANDEXP = /\d+(\.\d+)?\x\^\-?\d+/g;
+const COEFFX = /\d+(?:\.\d+)?\x/g;
+const COEFF = /\d+(?:\.\d+)?/g;
+const XANDEXP = /\x\^\-?\d+/g;
+const X = /\x/g;
+const EXP = /\^-?\d+/g;
+const MINUS = /\-/g;
+const PLUS = /\+/g;
+
 class Term {
   constructor(coefficient = 1, exponent = 1) {
     this.coefficient = Number(coefficient);
@@ -20,23 +33,17 @@ class Operator {
 }
 
 function* tokenize(inputStream) {
-  const coeffXAndExp = /\d+(\.\d+)?\x\^\-?\d+/g;
-  const coeffX = /\d+(?:\.\d+)?\x/g;
-  const coeff = /\d+(?:\.\d+)?/g;
-  const xAndExp = /\x\^\-?\d+/g;
-  const x = /\x/g;
-  const exp = /\^-?\d+/g;
-  const minus = /\-/g;
-  const plus = /\+/g;
-
+  if (!inputStream.match(PATTERN)) {
+    throw new SyntaxError("Unexpected Pattern");
+  }
   let currentString = inputStream;
   let tokenIndex = 0;
 
   while (tokenIndex < currentString.length) {
     currentString = currentString.slice(tokenIndex).trim();
 
-    if (currentString.match(minus)) {
-      const matchedString = currentString.match(minus)[0];
+    if (currentString.match(MINUS)) {
+      const matchedString = currentString.match(MINUS)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
         tokenIndex = matchedString.length;
 
@@ -44,39 +51,39 @@ function* tokenize(inputStream) {
         continue;
       }
     }
-    if (currentString.match(coeffXAndExp)) {
-      const matchedString = currentString.match(coeffXAndExp)[0];
+    if (currentString.match(COEFFXANDEXP)) {
+      const matchedString = currentString.match(COEFFXANDEXP)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        const termCoeff = matchedString.match(coeff)[0];
-        const termExp = matchedString.match(exp)[0].slice(1);
+        const termCoeff = matchedString.match(COEFF)[0];
+        const termExp = matchedString.match(EXP)[0].slice(1);
         tokenIndex = matchedString.length;
 
         yield new Term(termCoeff, termExp);
         continue;
       }
     }
-    if (currentString.match(coeffX)) {
-      const matchedString = currentString.match(coeffX)[0];
+    if (currentString.match(COEFFX)) {
+      const matchedString = currentString.match(COEFFX)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        const termCoeff = matchedString.match(coeff)[0];
+        const termCoeff = matchedString.match(COEFF)[0];
         tokenIndex = matchedString.length;
 
         yield new Term(termCoeff);
         continue;
       }
     }
-    if (currentString.match(xAndExp)) {
-      const matchedString = currentString.match(xAndExp)[0];
+    if (currentString.match(XANDEXP)) {
+      const matchedString = currentString.match(XANDEXP)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        const termExp = matchedString.match(exp)[0].slice(1);
+        const termExp = matchedString.match(EXP)[0].slice(1);
         tokenIndex = matchedString.length;
 
         yield new Term(1, termExp);
         continue;
       }
     }
-    if (currentString.match(x)) {
-      const matchedString = currentString.match(x)[0];
+    if (currentString.match(X)) {
+      const matchedString = currentString.match(X)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
         tokenIndex = matchedString.length;
 
@@ -84,8 +91,8 @@ function* tokenize(inputStream) {
         continue;
       }
     }
-    if (currentString.match(coeff)) {
-      const matchedString = currentString.match(coeff)[0];
+    if (currentString.match(COEFF)) {
+      const matchedString = currentString.match(COEFF)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
         tokenIndex = matchedString.length;
 
@@ -93,8 +100,8 @@ function* tokenize(inputStream) {
         continue;
       }
     }
-    if (currentString.match(plus)) {
-      const matchedString = currentString.match(plus)[0];
+    if (currentString.match(PLUS)) {
+      const matchedString = currentString.match(PLUS)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
         tokenIndex = matchedString.length;
 
@@ -102,8 +109,7 @@ function* tokenize(inputStream) {
         continue;
       }
     }
-    throw "LEXING ERROR";
-    return;
+    throw new SyntaxError("Unexpected token");
   }
 }
 
@@ -126,12 +132,12 @@ function* parse(tokenStream) {
     if (tokenToCheck.constructor === Operator) {
       if (previousToken === undefined || previousToken.constructor === Term) {
         if (index === tokenStream.length) {
-          throw "Polynomial must end in a Term";
+          throw new SyntaxError("Polynomial must end in a Term");
         }
         previousToken = tokenToCheck;
         return tokenToCheck;
       }
-      throw "Expected an Operator token";
+      throw new SyntaxError("Expected an Operator token");
     }
     return tokenToCheck;
   }
@@ -142,7 +148,7 @@ function* parse(tokenStream) {
       token = tokenStream[index++];
       return consumedToken;
     }
-    throw (`Expected: ${expected}`, token);
+    throw new SyntaxError(`Expected: ${expected}`, token);
   }
 
   function parseOperator() {
@@ -156,7 +162,7 @@ function* parse(tokenStream) {
     } else if (at(token).constructor === Term) {
       return parseTerm();
     }
-    throw "Expected an Operator";
+    throw new SyntaxError("Expected an Operator");
   }
 
   function parseTerm() {
@@ -164,7 +170,7 @@ function* parse(tokenStream) {
       const term = match();
       return term;
     }
-    throw "Expected a Term";
+    throw new SyntaxError("Expected a Term");
   }
 
   do {
@@ -177,7 +183,6 @@ function differentiate(terms) {
     (t) => new Term(t.exponent * t.coefficient, t.exponent - 1)
   );
 
-  // Edge Cases
   if (termMap.length === 1 && termMap[0].coefficient === 0) {
     return "0";
   }
@@ -206,6 +211,6 @@ function differentiate(terms) {
   return termString;
 }
 
-export default function derivative(poly) {
+function derivative(poly) {
   return differentiate([...parse([...tokenize(poly)])]);
 }
