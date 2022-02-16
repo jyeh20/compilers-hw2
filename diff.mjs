@@ -36,7 +36,6 @@ function* tokenize(inputStream) {
     currentString = currentString.slice(tokenIndex).trim();
 
     if (currentString.match(minus)) {
-      //   console.log("Minus MATCH FOUND");
       const matchedString = currentString.match(minus)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
         tokenIndex = matchedString.length;
