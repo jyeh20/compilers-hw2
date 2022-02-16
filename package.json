@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "mocha": "^9.2.0"
+  },
+  "name": "compilers-hw2",
+  "version": "1.0.0",
+  "description": "Recursive Descent Parser for Polynomials",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jyeh20/compilers-hw2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jyeh20/compilers-hw2/issues"
+  },
+  "homepage": "https://github.com/jyeh20/compilers-hw2#readme"
+}
