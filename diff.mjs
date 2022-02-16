@@ -188,7 +188,7 @@ function differentiate(terms) {
   for (let index = 0; index < termMap.length; index++) {
     const term = termMap[index];
     if (index !== 0) {
-      if (term.coefficient > 0) {
+      if (term.coefficient > 0 && termString.length > 0) {
         termString += "+";
       }
     }
