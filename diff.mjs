@@ -1,6 +1,3 @@
-const inputBox = document.querySelector("input");
-const answerDiv = document.querySelector("#result");
-
 class Term {
   constructor(coefficient = 1, exponent = 1) {
     this.coefficient = Number(coefficient);
@@ -32,31 +29,16 @@ function* tokenize(inputStream) {
   const minus = /\-/g;
   const plus = /\+/g;
 
-  // const tokensArr =  [...sourceCode.matchAll(pattern)]
   let currentString = inputStream;
   let tokenIndex = 0;
 
   while (tokenIndex < currentString.length) {
     currentString = currentString.slice(tokenIndex).trim();
-    // console.log(`\nToken Index ${tokenIndex}`);
-    // console.log(`Spliced String: ${currentString}`);
 
-    // console.log(`Matches: [
-    // coeffXAndExp: ${currentString.match(coeffXAndExp)},
-    // coeffX: ${currentString.match(coeffX)},
-    // coeff: ${currentString.match(coeff)},
-    // xAndExp: ${currentString.match(xAndExp)},
-    // x: ${currentString.match(x)},
-    // exp: ${currentString.match(exp)},
-    // minus: ${currentString.match(minus)},
-    // plus: ${currentString.match(plus)},
-    // ]\n
-    // `);
     if (currentString.match(minus)) {
       //   console.log("Minus MATCH FOUND");
       const matchedString = currentString.match(minus)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yiedling Minus: [${matchedString}]`);
         tokenIndex = matchedString.length;
 
         yield new Operator(matchedString);
@@ -64,10 +46,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(coeffXAndExp)) {
-      //   console.log("COEFFXANDEXP MATCH FOUND");
       const matchedString = currentString.match(coeffXAndExp)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yielding coeffXAndExp: [${matchedString}]`);
         const termCoeff = matchedString.match(coeff)[0];
         const termExp = matchedString.match(exp)[0].slice(1);
         tokenIndex = matchedString.length;
@@ -77,10 +57,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(coeffX)) {
-      //   console.log("COEFFX MATCH FOUND");
       const matchedString = currentString.match(coeffX)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yielding CoeffX: [${matchedString}]`);
         const termCoeff = matchedString.match(coeff)[0];
         tokenIndex = matchedString.length;
 
@@ -89,10 +67,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(xAndExp)) {
-      //   console.log("XANDEXP");
       const matchedString = currentString.match(xAndExp)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yielding xAndExp: [${matchedString}]`);
         const termExp = matchedString.match(exp)[0].slice(1);
         tokenIndex = matchedString.length;
 
@@ -101,10 +77,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(x)) {
-      //   console.log("X MATCH FOUND");
       const matchedString = currentString.match(x)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yielding x: [${matchedString}]`);
         tokenIndex = matchedString.length;
 
         yield new Term();
@@ -112,10 +86,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(coeff)) {
-      //   console.log("COEFF MATCH FOUND");
       const matchedString = currentString.match(coeff)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yiedling Coeff: [${matchedString}]`);
         tokenIndex = matchedString.length;
 
         yield new Term(matchedString, 0);
@@ -123,10 +95,8 @@ function* tokenize(inputStream) {
       }
     }
     if (currentString.match(plus)) {
-      //   console.log("PLUS MATCH FOUND");
       const matchedString = currentString.match(plus)[0];
       if (matchedString === currentString.slice(0, matchedString.length)) {
-        // console.log(`Yielding Plus: [${matchedString}]`);
         tokenIndex = matchedString.length;
 
         yield new Operator(matchedString);
@@ -136,34 +106,85 @@ function* tokenize(inputStream) {
     throw "LEXING ERROR";
     return;
   }
-  //   console.log("============================done============================\n");
 }
 
 function* parse(tokenStream) {
-  //   console.log("\n====================PARSING====================");
-  for (let index = 0; index < tokenStream.length; index++) {
-    const token = tokenStream[index];
-    if (token.constructor.name === "Operator") {
-      if (token.lexeme === "-") {
-        try {
-          tokenStream[index + 1].coefficient *= -1;
-        } catch (e) {
-          throw "SYNTAX ERROR";
-        }
+  let index = 0;
+  let token = tokenStream[index++];
+  let previousToken = undefined;
+
+  function at(tokenToCheck) {
+    if (tokenToCheck.constructor === Term) {
+      if (
+        previousToken === undefined ||
+        previousToken.constructor === Operator
+      ) {
+        previousToken = tokenToCheck;
+        return tokenToCheck;
       }
-    } else {
-      yield token;
     }
+
+    if (tokenToCheck.constructor === Operator) {
+      if (previousToken === undefined || previousToken.constructor === Term) {
+        if (index === tokenStream.length) {
+          throw "Polynomial must end in a Term";
+        }
+        previousToken = tokenToCheck;
+        return tokenToCheck;
+      }
+      throw "Expected an Operator token";
+    }
+    return tokenToCheck;
   }
+
+  function match(expected) {
+    if (expected === undefined || at(expected)) {
+      const consumedToken = token;
+      token = tokenStream[index++];
+      return consumedToken;
+    }
+    throw (`Expected: ${expected}`, token);
+  }
+
+  function parseOperator() {
+    if (at(token).constructor === Operator) {
+      const op = match().lexeme;
+      const term = parseTerm();
+      if (op === "-") {
+        term.coefficient *= -1;
+      }
+      return term;
+    } else if (at(token).constructor === Term) {
+      return parseTerm();
+    }
+    throw "Expected an Operator";
+  }
+
+  function parseTerm() {
+    if (at(token).constructor === Term) {
+      const term = match();
+      return term;
+    }
+    throw "Expected a Term";
+  }
+
+  do {
+    yield parseOperator();
+  } while (index < tokenStream.length);
 }
 
 function differentiate(terms) {
-  //   console.log("\n=============GETTING DERIVATIVES=============");
   const termMap = terms.map(
     (t) => new Term(t.exponent * t.coefficient, t.exponent - 1)
   );
 
+  // Edge Cases
+  if (termMap.length === 1 && termMap[0].coefficient === 0) {
+    return "0";
+  }
+
   let termString = "";
+
   for (let index = 0; index < termMap.length; index++) {
     const term = termMap[index];
     if (index !== 0) {
@@ -172,8 +193,8 @@ function differentiate(terms) {
       }
     }
     if (term.coefficient !== 0) {
+      termString += term.coefficient;
       if (term.exponent !== 0) {
-        termString += term.coefficient;
         if (term.exponent === 1) {
           termString += "x";
         } else {
@@ -186,10 +207,6 @@ function differentiate(terms) {
   return termString;
 }
 
-function derivative(poly) {
+export default function derivative(poly) {
   return differentiate([...parse([...tokenize(poly)])]);
 }
-
-inputBox.addEventListener("input", () => {
-  answerDiv.textContent = derivative(inputBox.value);
-});
