@@ -234,7 +234,7 @@ function App() {
       console.log(e);
       return undefined;
     }
-    setTokens(tokens);
+    setTokens([...tokenize(poly)]);
     setParseTree(AST);
     return differentiate(AST);
   }
@@ -253,6 +253,7 @@ function App() {
         className="App-input"
         autoComplete="off"
         id="input"
+        defaultValue="4x^3 - 7x^2 + 6x - 20"
         onChange={handleFunctionInput}
       />
       <div>f(x) = {inString}</div>
