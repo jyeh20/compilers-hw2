@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import "./App.css";
 
@@ -243,6 +243,11 @@ function App() {
     setInString(e.target.value);
     setOut(derivative(e.target.value));
   };
+
+  useEffect(() => {
+    setInString("4x^3 - 7x^2 + 6x - 20");
+    setOut(derivative("4x^3 - 7x^2 + 6x - 20"));
+  }, []);
 
   return (
     <div className="App">
