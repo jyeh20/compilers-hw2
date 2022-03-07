@@ -1,3 +1,77 @@
+/*
+@media (min-width:320px)  {smartphones, iPhone, portrait 480x320 phones}
+@media (min-width:481px)  {portrait e-readers (Nook/Kindle), smaller tablets @ 600 or @ 640 wide.}
+@media (min-width:641px)  {portrait tablets, portrait iPad, landscape e-readers, landscape 800x480 or 854x480 phones}
+@media (min-width:961px)  {tablet, landscape iPad, lo-res laptops ands desktops}
+@media (min-width:1025px) {big landscape tablets, laptops, and desktops}
+@media (min-width:1281px) {hi-res laptops and desktops}
+*/
+
 .App {
+  font-size: 16px;
+  height: 100vh;
   text-align: center;
+  background-color: rgb(243, 245, 233);
+}
+
+.App-input-prompt {
+  margin: auto;
+  padding-top: 7vh;
+  padding-bottom: 1vh;
+  width: 60%;
+  font-weight: 500;
+}
+
+.App-input {
+  height: 15px;
+  width: 140px;
+}
+
+.App-output {
+  padding-top: 1vh;
+}
+
+.App-stream-header {
+  padding-top: 2vh;
+  font-weight: 500;
+}
+
+@media screen and (min-width: 320px) {
+  .App {
+    font-size: calc(16px + 6 * ((100vw - 320px) / 680));
+  }
+
+  .App-input {
+    height: 2em;
+    width: 20em;
+  }
+}
+
+@media screen and (min-width: 481px) {
+  .App-stream-container {
+    padding-top: 2vh;
+    margin: auto;
+    width: 80%;
+    font-size: 0.75em;
+    display: grid;
+    grid-template-columns: 48% 4% 48%;
+  }
+
+  .App-token-stream {
+    margin: auto;
+    grid-column-start: 1;
+    grid-column-end: 2;
+  }
+
+  .App-parse-tree {
+    margin: auto;
+    grid-column-start: 3;
+    grid-column-end: 4;
+  }
+}
+
+@media screen and (min-width: 961px) {
+  .App {
+    font-size: 26px;
+  }
 }
